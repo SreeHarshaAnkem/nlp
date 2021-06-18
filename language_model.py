@@ -69,14 +69,18 @@ temperature = 0.5
 start = "who ar"
 
 
-for i in range(50):
-    new_input_idx = np.array(tokenizer.texts_to_sequences([start]))
-    new_input_ohe = tf.keras.utils.to_categorical(y=new_input_idx,  num_classes=vocab_size)
-    new_input_padded = pad_sequences(new_input_ohe, maxlen=47, padding="pre")
-    output = model.predict(new_input_padded)
-    output_t = tf.math.log(output[0,-1:, :])/temperature
-    sample_word_idx = tf.random.categorical(output_t, num_samples=1).numpy()[0][0]
-    predicted_token = tokenizer.index_word[sample_word_idx]
-    start = start + predicted_token
-    print(i, start)
+for temperature in [0.1, 1, 5, 100, 1000, 9999]:
+    start = "How are yo"
+    print(temperature)
+    for i in range(2):
 
+        new_input_idx = np.array(tokenizer.texts_to_sequences([start]))
+        new_input_ohe = tf.keras.utils.to_categorical(y=new_input_idx,  num_classes=vocab_size)
+        new_input_padded = pad_sequences(new_input_ohe, maxlen=47, padding="pre")
+        output = model.predict(new_input_padded)
+        output_t = tf.math.log(output[0,-1:, :])/temperature
+        sample_word_idx = tf.random.categorical(output_t, num_samples=1).numpy()[0][0]
+        predicted_token = tokenizer.index_word[sample_word_idx]
+        start = start + predicted_token
+        print(i, start)
+    print("**"*25)
