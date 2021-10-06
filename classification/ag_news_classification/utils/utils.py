@@ -34,6 +34,7 @@ class ModelJob:
         optimizer=None,
         n_epochs=None,
         phases=[],
+        model_save_name = None
     ):
         self.model = model
         self.criterion = criterion
@@ -41,10 +42,11 @@ class ModelJob:
         self.n_epochs = n_epochs
         self.dataloaders = dataloaders
         self.model_save_path = model_save_path
-        self.phases = ["train", "test"]
+        self.phases = phases
         self.loss = {"train": [], "test": [], "validation": []}
         self.accuracy = {"train": [], "test": [], "validation": []}
         self.best_epoch = 0
+        self.model_save_name = model_save_name
 
     def train_step(self):
         for epoch in range(1, self.n_epochs + 1):
@@ -106,13 +108,13 @@ class ModelJob:
         else:
             return predictions
 
-    def save_model(self, model_name):
+    def save_model(self):
         if self.best_epoch != np.argmin(self.loss["test"]):
             self.best_epoch = np.argmin(self.loss["test"])
             print(f"Best epoch : {self.best_epoch}")
-            print(f"Saving model : {self.model_name} at {self.model_save_path}")
-            file_name = os.path.join(self.model_save_path, model_name)
-            torch.save(model.state_dict(), f=file_name)
+            print(f"Saving model : {self.model_save_name} at {self.model_save_path}")
+            file_name = os.path.join(self.model_save_path, self.model_save_name)
+            torch.save(self.model.state_dict(), f=file_name)
 
     def load_model(self, model_name):
         file_name = os.path.join(self.model_save_path, model_name)
