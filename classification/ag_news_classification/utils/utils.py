@@ -111,7 +111,7 @@ class ModelJob:
     def save_model(self):
         if self.best_epoch != np.argmin(self.loss["test"]) or self.best_epoch == 0:
             self.best_epoch = np.argmin(self.loss["test"])
-            print(f"Best epoch : {self.best_epoch}")
+            print(f"Best epoch : {self.best_epoch+1}")
             print(f"Saving model : {self.model_save_name} at {self.model_save_path}")
             file_name = os.path.join(self.model_save_path, self.model_save_name)
             torch.save(self.model.state_dict(), f=file_name)
