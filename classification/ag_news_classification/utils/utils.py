@@ -109,7 +109,7 @@ class ModelJob:
             return predictions
 
     def save_model(self):
-        if self.best_epoch != np.argmin(self.loss["test"]):
+        if self.best_epoch != np.argmin(self.loss["test"]) or self.best_epoch == 0:
             self.best_epoch = np.argmin(self.loss["test"])
             print(f"Best epoch : {self.best_epoch}")
             print(f"Saving model : {self.model_save_name} at {self.model_save_path}")
