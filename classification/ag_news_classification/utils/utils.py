@@ -124,7 +124,7 @@ class ModelJob:
 
 class Attention(nn.Module):
     def __init__(self, input_dim):
-        super(Attention, self).__init__()
+        super().__init__()
         self.input_dim = input_dim
         self.w_h = nn.Linear(in_features=input_dim, out_features=input_dim)
         self.v = nn.Linear(in_features=input_dim, out_features=1)
