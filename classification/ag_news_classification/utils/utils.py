@@ -8,15 +8,12 @@ from torch.nn.utils.rnn import pad_sequence
 from torch.optim import Adam
 import re
 import spacy
-
 import warnings
 
 warnings.filterwarnings("ignore")
-
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
-
 from tqdm import tqdm
 import os
 
@@ -47,7 +44,7 @@ class ModelJob:
         self.phases = ["train", "test"]
         self.loss = {"train": [], "test": [], "validation": []}
         self.accuracy = {"train": [], "test": [], "validation": []}
-        self.best_epoch = self.check_best_epoch()
+        self.best_epoch = 0
 
     def train_step(self):
         for epoch in range(1, self.n_epochs + 1):
