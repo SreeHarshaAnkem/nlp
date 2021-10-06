@@ -34,7 +34,7 @@ class ModelJob:
         optimizer=None,
         n_epochs=None,
         phases=[],
-        model_save_name = None
+        model_save_name=None,
     ):
         self.model = model
         self.criterion = criterion
@@ -87,7 +87,7 @@ class ModelJob:
                 self.accuracy[mode].append(epoch_accuracy.item())
                 if mode == "test":
                     self.save_model()
-        
+
     def predict_step(self, dataloader=None, if_y=False):
         self.model.eval()
         for n_batches, batch in enumerate(dataloader):
@@ -130,7 +130,13 @@ class Attention(nn.Module):
         self.v = nn.Linear(in_features=input_dim, out_features=1)
 
     def forward(self, x):
-        alpha = F.softmax(self.v(F.tanh(x)), dim=1)
-        alpha_repeated = alpha.repeat(1, 1, self.input_dim)
-        effective_x = x * alpha_repeated
+        (sequence, mask) = x
+        transformed_x = self.w_h(sequence)
+        context_vector = self.v(F.tanh(transformed_x)).squeeze(dim=-1)
+        masked_context = torch.where(
+            mask == 0.0, torch.tensor(-99999.0), context_vector
+        )
+        alpha = F.softmax(masked_context, dim=1)
+        alpha_repeated = alpha.unsqueeze(dim=2).repeat(1, 1, self.input_dim)
+        effective_x = sequence * alpha_repeated
         return effective_x, alpha
