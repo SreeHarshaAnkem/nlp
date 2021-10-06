@@ -83,7 +83,9 @@ class ModelJob:
                 )
                 self.loss[mode].append(epoch_loss.item())
                 self.accuracy[mode].append(epoch_accuracy.item())
-
+                if mode == "test":
+                    self.save_model(model_name="ag_news_gru")
+        
     def predict_step(self, dataloader=None, if_y=False):
         self.model.eval()
         for n_batches, batch in enumerate(dataloader):
@@ -105,8 +107,10 @@ class ModelJob:
             return predictions
 
     def save_model(self, model_name):
-        if self.best_epoch != np.argmax(self.loss["test"]):
-            self.best_epoch = np.argmax(self.loss["test"])
+        if self.best_epoch != np.argmin(self.loss["test"]):
+            self.best_epoch = np.argmin(self.loss["test"])
+            print(f"Best epoch : {self.best_epoch}")
+            print(f"Saving model : {self.model_name} at {self.model_save_path}")
             file_name = os.path.join(self.model_save_path, model_name)
             torch.save(model.state_dict(), f=file_name)
 
