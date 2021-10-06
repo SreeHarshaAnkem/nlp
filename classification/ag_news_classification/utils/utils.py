@@ -86,7 +86,7 @@ class ModelJob:
                 self.loss[mode].append(epoch_loss.item())
                 self.accuracy[mode].append(epoch_accuracy.item())
                 if mode == "test":
-                    self.save_model(model_name="ag_news_gru")
+                    self.save_model()
         
     def predict_step(self, dataloader=None, if_y=False):
         self.model.eval()
