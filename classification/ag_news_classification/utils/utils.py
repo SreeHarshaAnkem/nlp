@@ -131,13 +131,17 @@ class Attention(nn.Module):
         self.mask_impute = torch.tensor(-9999.0).to(device)
 
     def forward(self, x):
-        (sequence, mask) = x
-        transformed_x = self.w_h(sequence)
-        context_vector = self.v(F.tanh(transformed_x)).squeeze(dim=-1)
+        (seq, mask) = x
+        transformed_x = self.w_h(seq.contiguous().view(seq.shape[0]*seq.shape[1], seq.shape[-1]))
+        context_vector = self.v(F.tanh(transformed_x))
+        context_vector = context_vector.view(seq.shape[0], seq.shape[1])                 
         masked_context = torch.where(
             mask == 0.0, self.mask_impute, context_vector
         )
         alpha = F.softmax(masked_context, dim=1)
         alpha_repeated = alpha.unsqueeze(dim=2).repeat(1, 1, self.input_dim)
-        effective_x = sequence * alpha_repeated
-        return effective_x, alpha
+        effective_x = seq * alpha_repeated
+        return torch.sum(effective_x, dim=1), alpha
+
+
+ 
