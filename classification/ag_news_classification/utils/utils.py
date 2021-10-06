@@ -32,6 +32,7 @@ class ModelJob:
         self,
         model,
         dataloaders,
+        model_save_path,
         criterion=None,
         optimizer=None,
         n_epochs=None,
@@ -42,17 +43,19 @@ class ModelJob:
         self.optimizer = optimizer
         self.n_epochs = n_epochs
         self.dataloaders = dataloaders
+        self.model_save_path = model_save_path
         self.phases = ["train", "test"]
         self.loss = {"train": [], "test": [], "validation": []}
         self.accuracy = {"train": [], "test": [], "validation": []}
+        self.best_epoch = self.check_best_epoch()
 
     def train_step(self):
-        for epoch in tqdm(range(1, self.n_epochs + 1)):
+        for epoch in range(1, self.n_epochs + 1):
             print(f"EPOCH: {epoch} out of {self.n_epochs}")
             epoch_loss = 0
             epoch_accuracy = 0
             best_val_accuracy = 0
-            
+
             for mode in self.phases:
                 if mode == "train":
                     self.model.train()
@@ -74,18 +77,20 @@ class ModelJob:
                         self.optimizer.step()
                     epoch_loss += loss_value
                     n_correct = (batch_y == torch.argmax(y_pred, dim=1)).sum()
-                    epoch_accuracy += n_correct/batch_y.shape[0]
+                    epoch_accuracy += n_correct / batch_y.shape[0]
                 epoch_loss = epoch_loss / (n_batches + 1)
                 epoch_accuracy = epoch_accuracy / (n_batches + 1)
                 print()
-                print(f"\tMODE: {mode} : LOSS: {epoch_loss} : ACCURACY: {epoch_accuracy}")
+                print(
+                    f"\tMODE: {mode} : LOSS: {epoch_loss} : ACCURACY: {epoch_accuracy}"
+                )
                 self.loss[mode].append(epoch_loss.item())
                 self.accuracy[mode].append(epoch_accuracy.item())
 
     def predict_step(self, dataloader=None, if_y=False):
         self.model.eval()
-        for n_batches, batch in tqdm(enumerate(dataloader)):
-            batch_X, batch_len,  batch_y = batch
+        for n_batches, batch in enumerate(dataloader):
+            batch_X, batch_len, batch_y = batch
             # forward propogation
             y_pred = self.model((batch_X, batch_len))
             if n_batches == 0:
@@ -101,6 +106,17 @@ class ModelJob:
             return all_y, predictions
         else:
             return predictions
+
+    def save_model(self, model_name):
+        if self.best_epoch != np.argmax(self.loss["test"]):
+            self.best_epoch = np.argmax(self.loss["test"])
+            file_name = os.path.join(self.model_save_path, model_name)
+            torch.save(model.state_dict(), f=file_name)
+
+    def load_model(self, model_name):
+        file_name = os.path.join(self.model_save_path, model_name)
+        model_state_dict = torch.load(file_name)
+        self.model.load_state_dict(model_state_dict)
 
 
 class Attention(nn.Module):
